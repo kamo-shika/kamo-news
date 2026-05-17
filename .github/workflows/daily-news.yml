@@ -11,6 +11,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 concurrency:
   group: daily-news
@@ -39,7 +40,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          max_turns: "30"
+          claude_args: "--max-turns 30"
           prompt: |
             あなたは kamo-news リポジトリで日次の AI トレンドニュースを生成するエージェントです。
 
