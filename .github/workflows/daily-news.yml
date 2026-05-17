@@ -1,6 +1,8 @@
 name: daily-news
 
 on:
+  schedule:
+    - cron: "0 22 * * *"  # 22:00 UTC = 07:00 JST
   workflow_dispatch:
     inputs:
       target_date:
@@ -51,6 +53,16 @@ jobs:
             ## 出力先
 
             `news/${{ steps.date.outputs.value }}.md`
+
+            ## README の最新一覧更新
+
+            記事ファイルをコミットする前に、以下を実行して README.md の `<!-- LATEST:START -->` ブロックを最新化してください:
+
+            ```bash
+            python3 scripts/update_readme.py --limit 30
+            ```
+
+            README.md に変更があれば同じコミットに含めます。
 
             ## ブランチと PR
 
