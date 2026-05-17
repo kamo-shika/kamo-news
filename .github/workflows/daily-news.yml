@@ -1,0 +1,77 @@
+name: daily-news
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: "生成対象日 (YYYY-MM-DD, 省略時は今日)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: daily-news
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set target date
+        id: date
+        run: |
+          if [ -n "${{ inputs.target_date }}" ]; then
+            echo "value=${{ inputs.target_date }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=$(TZ=Asia/Tokyo date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Claude Code (generate news)
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          max_turns: "30"
+          prompt: |
+            あなたは kamo-news リポジトリで日次の AI トレンドニュースを生成するエージェントです。
+
+            ## タスク
+
+            `.claude/skills/ai-trend-daily/SKILL.md` の手順に従って、対象日 ${{ steps.date.outputs.value }} のニュース記事を生成してください。
+
+            ## 出力先
+
+            `news/${{ steps.date.outputs.value }}.md`
+
+            ## ブランチと PR
+
+            1. 新しいブランチ `news/${{ steps.date.outputs.value }}` を作成
+            2. 生成した記事ファイルをコミット
+            3. ブランチを push
+            4. PR を作成:
+               - タイトル: `news: ${{ steps.date.outputs.value }} daily digest`
+               - 本文: スキルの完了報告内容 (選出件数、セルフレビュー結果)
+               - ラベル: `daily-news`
+               - **セルフレビューが Fail だった場合は draft PR にし、追加で `needs-review` ラベルを付与**
+            5. PR URL を最終出力に含める
+
+            ## 制約
+
+            - main ブランチへ直接 push しない
+            - 既に同名ブランチが存在する場合は削除してから作成
+            - `gh` コマンドで PR 操作を行う (GITHUB_TOKEN は環境変数で提供される)
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## 実行サマリ" >> "$GITHUB_STEP_SUMMARY"
+          echo "- 対象日: ${{ steps.date.outputs.value }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- ステータス: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
