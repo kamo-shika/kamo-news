@@ -18,6 +18,7 @@ description: |
 
 - `references/sources.md` — 情報源の一覧と取得方法
 - `references/output-format.md` — 出力 Markdown のフォーマット
+- `references/validation.md` — セルフレビュー チェックリストと再生成判定
 
 ## 実行手順
 
@@ -59,9 +60,27 @@ date -u -d '+9 hours' +%Y-%m-%d
 
 を含める。
 
-### Step 5: 完了報告
+### Step 5: セルフレビュー
 
-生成したファイルパスと選出件数を報告する。
+`references/validation.md` のチェックリストに従い、生成した記事を自己評価する。
+
+全 8 項目を順にチェックし、判定結果を記録する。
+
+### Step 6: 再生成判定
+
+- すべて Pass → Step 7 (完了報告) へ
+- いずれか Fail かつ再生成回数 < 1 → Fail 項目を明示してもう一度 Step 2〜5 を実行 (再生成 1 回)
+- 2 回目でも Fail → 完了報告に Fail 情報を含めて終了 (PR は呼び出し側が draft で作成)
+
+### Step 7: 完了報告
+
+以下を報告する:
+
+- 生成したファイルパス
+- 選出件数
+- セルフレビュー結果 (Pass / Fail、Fail の場合は項目)
+- 再生成の有無
+- `needs-review` ラベル付与の要否 (= 最終結果が Fail なら true)
 
 ## 制約
 
