@@ -29,7 +29,7 @@ const homeHref = import.meta.env.BASE_URL;
     />
   </head>
   <body>
-    <header>
+    <header class="site-header">
       <div class="wrap">
         <a class="brand" href={homeHref}>{siteTitle}</a>
         <nav>
@@ -77,12 +77,12 @@ const homeHref = import.meta.env.BASE_URL;
         line-height: 1.7;
       }
       .wrap { max-width: var(--max-width); margin: 0 auto; padding: 0 1rem; }
-      header {
+      .site-header {
         background: var(--bg-card);
         border-bottom: 1px solid var(--border);
         padding: 0.8rem 0;
       }
-      header .wrap { display: flex; justify-content: space-between; align-items: center; }
+      .site-header .wrap { display: flex; justify-content: space-between; align-items: center; }
       .brand { font-weight: 700; font-size: 1.15rem; color: var(--fg); text-decoration: none; }
       nav { display: flex; gap: 1rem; }
       nav a { color: var(--accent); text-decoration: none; font-size: 0.95rem; }
