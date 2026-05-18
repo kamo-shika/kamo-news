@@ -1,53 +1,62 @@
-name: ci
+name: deploy
 
 on:
-  pull_request:
+  push:
     branches: [main]
+    paths:
+      - "news/**"
+      - "site/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  python-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
-      - name: Run pytest
-        run: |
-          cd scripts
-          uv run --with pytest pytest -v
-
-  markdown-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v17
-        with:
-          globs: |
-            news/**/*.md
-            README.md
-            .claude/skills/**/*.md
-
-  site-build:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: site
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: site/pnpm-lock.yaml
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
       - name: Build site
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: pnpm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

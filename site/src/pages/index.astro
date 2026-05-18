@@ -1,0 +1,81 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+
+const entries = (await getCollection("news")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const fmt = (d: Date) =>
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+---
+
+<Base
+  title="kamo-news"
+  description="Claude Code が毎朝 7:00 JST に自動生成する AI トレンドニュース。最新の LLM・生成 AI・エージェント情報をまとめて配信。"
+>
+  <h1>kamo-news</h1>
+  <p>毎朝 7:00 JST に Claude Code が自動生成する AI トレンドニュース。RSS で購読可能。</p>
+
+  <h2>最新記事</h2>
+  {entries.length === 0 && <p>まだ記事がありません。</p>}
+  <ul class="article-list">
+    {
+      entries.map((entry) => (
+        <li>
+          <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/${entry.id.replace(/\.md$/, "")}/`}>
+            <time datetime={fmt(entry.data.date)}>{fmt(entry.data.date)}</time>
+            <span class="t">{entry.data.title}</span>
+            <span class="d">{entry.data.description}</span>
+            {entry.data.tags.length > 0 && (
+              <span class="tags">
+                {entry.data.tags.map((tag) => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </span>
+            )}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <style>
+    .article-list { list-style: none; padding: 0; }
+    .article-list li { margin: 0 0 1.2rem; }
+    .article-list a {
+      display: block;
+      padding: 1rem 1.1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: inherit;
+      text-decoration: none;
+      transition: border-color 0.15s;
+    }
+    .article-list a:hover { border-color: var(--accent); }
+    .article-list time {
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .article-list .t { display: block; font-weight: 600; margin-top: 0.2rem; }
+    .article-list .d {
+      display: block;
+      margin-top: 0.45rem;
+      color: var(--fg-muted);
+      font-size: 0.94rem;
+    }
+    .article-list .tags { display: block; margin-top: 0.6rem; }
+    .article-list .tag {
+      display: inline-block;
+      padding: 0.1rem 0.55rem;
+      margin-right: 0.4rem;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--fg-muted);
+    }
+  </style>
+</Base>
