@@ -18,6 +18,7 @@ GitHub Actions が日次で起動し、Claude Code Action が `.claude/skills/ai
 ## 最新記事
 
 <!-- LATEST:START -->
+- [AI トレンドニュース 2026-06-02](news/2026-06-02.md)
 - [AI トレンドニュース 2026-05-29](news/2026-05-29.md)
 - [AI トレンドニュース 2026-05-28](news/2026-05-28.md)
 - [AI トレンドニュース 2026-05-27](news/2026-05-27.md)
